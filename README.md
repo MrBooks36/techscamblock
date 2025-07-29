@@ -11,6 +11,9 @@ Made for Windows 10/11.
 ## Installation
 See [Releases](https://github.com/ravendevteam/techscamblock/releases). Download the latest version for Windows.
 
+# Documentation
+Documentation is available [here](https://docs.ravendevteam.org/techscamblock).
+
 To compile from source, make sure you have Python 3.12.4 or greater, and Nuitka, install dependencies from the `requirements.txt`, then run `build.bat`.
 
 ## Authors & Contributors
