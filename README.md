@@ -20,3 +20,10 @@ To compile from source, make sure you have Python 3.12.4 or greater, and Nuitka,
 
 - [Raven Development Team](https://ravendevteam.org/)
 - [Icons by Icons8](https://icons8.com/)
+- [swordmasterliam](https://github.com/swordmasterliam)
+- Gemin (geminvr)
+- Aiden (aidencavallaro)
+- Dank Magician (dankmagicianofchaos)
+- Dolphin (dolphin678)
+- Mauricius (maurusia)
+- RockRevenchy (rockrevenchy)
