@@ -13,7 +13,7 @@ See [Releases](https://github.com/ravendevteam/techscamblock/releases). Download
 
 ## Screenshots
 
-![Demo Screenshot 1](https://raw.githubusercontent.com/ravendevteam/redact/refs/heads/main/demo_screenshot_1.webp)
+![Demo Screenshot 1](https://raw.githubusercontent.com/ravendevteam/techscamblock/refs/heads/main/demo_screenshot_1.webp)
 
 # Documentation
 Documentation is available [here](https://docs.ravendevteam.org/techscamblock).
