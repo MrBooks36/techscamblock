@@ -34,3 +34,4 @@ To compile from source, make sure you have Python 3.12.4 or greater, and Nuitka,
 - Dolphin (dolphin678)
 - Mauricius (maurusia)
 - RockRevenchy (rockrevenchy)
+- [MrBooks](https://github.com/mrbooks36)
