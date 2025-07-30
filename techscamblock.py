@@ -1,5 +1,4 @@
-import psutil, time, sys, ctypes, os, re, urllib.request, getpass, threading
-from pathlib import Path
+import psutil, time, sys, ctypes, os, re, urllib.request, getpass, threading, win32com.client, subprocess, tempfile
 from plyer import notification
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QObject, pyqtSignal
@@ -41,6 +40,34 @@ def _ensure_config() -> dict:
 			cfg[k] = v
 	return cfg
 
+import os
+import sys
+import win32com.client
+
+def create_shortcut(target, shortcut_name, shortcut_dir):
+    os.makedirs(shortcut_dir, exist_ok=True)  # Ensure the directory exists
+    shell = win32com.client.Dispatch("WScript.Shell")
+    shortcut_path = os.path.join(shortcut_dir, f"{shortcut_name}.lnk")
+    shortcut = shell.CreateShortCut(shortcut_path)
+    shortcut.TargetPath = target
+    shortcut.IconLocation = target
+    shortcut.Save()  # Capital "S"
+
+# Target is the current script
+target_path = sys.argv[0]
+
+# Correct startup folder path
+shortcut_name = "TechScamBlock"
+shortcut_directory = os.path.join(
+    os.environ["APPDATA"], 
+    "Microsoft", 
+    "Windows", 
+    "Start Menu", 
+    "Programs", 
+    "Startup"
+)
+
+create_shortcut(target_path, shortcut_name, shortcut_directory)
 
 
 _cfg = _ensure_config()
@@ -335,12 +362,80 @@ def monitor_processes():
 
 
 
+TASK_NAME = "TechScamBlock"
+SELF_PATH = os.path.abspath(sys.argv[0])
+
+def task_exists():
+	try:
+		out = subprocess.check_output(["schtasks", "/query", "/tn", TASK_NAME], stderr=subprocess.DEVNULL)
+		return TASK_NAME in out.decode()
+	except subprocess.CalledProcessError:
+		return False
+
+def create_task():
+	xml = f"""<?xml version="1.0" encoding="UTF-16"?>
+<Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
+  <Triggers />
+  <Principals>
+    <Principal id="Author">
+      <LogonType>InteractiveToken</LogonType>
+      <RunLevel>HighestAvailable</RunLevel>
+    </Principal>
+  </Principals>
+  <Settings>
+    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>
+    <DisallowStartIfOnBatteries>false</DisallowStartIfOnBatteries>
+    <StopIfGoingOnBatteries>false</StopIfGoingOnBatteries>
+    <AllowHardTerminate>true</AllowHardTerminate>
+    <StartWhenAvailable>true</StartWhenAvailable>
+    <RunOnlyIfNetworkAvailable>false</RunOnlyIfNetworkAvailable>
+    <IdleSettings>
+      <StopOnIdleEnd>false</StopOnIdleEnd>
+      <RestartOnIdle>false</RestartOnIdle>
+    </IdleSettings>
+    <AllowStartOnDemand>true</AllowStartOnDemand>
+    <Enabled>true</Enabled>
+    <Hidden>false</Hidden>
+    <RunOnlyIfIdle>false</RunOnlyIfIdle>
+    <WakeToRun>false</WakeToRun>
+    <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
+    <Priority>7</Priority>
+  </Settings>
+  <Actions Context="Author">
+    <Exec>
+      <Command>{SELF_PATH}</Command>
+    </Exec>
+  </Actions>
+</Task>
+"""
+	with tempfile.NamedTemporaryFile("w", suffix=".xml", delete=False) as f:
+		f.write(xml)
+		xml_path = f.name
+	subprocess.run(["schtasks", "/create", "/tn", TASK_NAME, "/xml", xml_path, "/f"], shell=True)
+	os.remove(xml_path)
+
+def run_task():
+	subprocess.run(["schtasks", "/run", "/tn", TASK_NAME], shell=True)
+
 if __name__ == "__main__":
 	if not is_admin():
-		run_as_admin()
-	else:
-		app = QApplication.instance() or QApplication(sys.argv)
-		app.setQuitOnLastWindowClosed(False)
-		tray = setup_tray(app, CONFIG_PATH)
-		threading.Thread(target=monitor_processes, daemon=True).start()
-		app.exec_()
+		if not task_exists():
+			# Prompt admin to create the task
+			ctypes.windll.shell32.ShellExecuteW(
+				None, "runas", sys.executable,
+				f'"{SELF_PATH}" --create-task',
+				None, 1
+			)
+			sys.exit()
+	elif "--create-task" in sys.argv:
+		create_task()
+		run_task()
+		sys.exit()
+
+	# Normal elevated runtime
+	app = QApplication.instance() or QApplication(sys.argv)
+	app.setQuitOnLastWindowClosed(False)
+	tray = setup_tray(app, CONFIG_PATH)
+	threading.Thread(target=monitor_processes, daemon=True).start()
+	app.exec_()
+
