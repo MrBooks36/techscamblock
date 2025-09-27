@@ -430,7 +430,6 @@ if __name__ == "__main__":
 	elif "--create-task" in sys.argv:
 		create_task()
 		run_task()
-		sys.exit()
 
 	# Normal elevated runtime
 	app = QApplication.instance() or QApplication(sys.argv)

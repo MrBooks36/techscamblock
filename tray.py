@@ -7,7 +7,7 @@ from PyQt5.QtCore import QUrl, QTimer, QProcess
 
 
 def get_resource_path(filename):
-	base_dir = getattr(sys, '_MEIPASS', os.path.dirname(__file__))
+	base_dir = os.path.dirname(sys.modules["__main__"].__file__)
 	return os.path.join(base_dir, filename)
 
 
