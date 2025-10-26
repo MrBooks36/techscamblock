@@ -416,6 +416,10 @@ def create_task():
 
 def run_task():
 	subprocess.run(["schtasks", "/run", "/tn", TASK_NAME], shell=True)
+	
+def lock_task_dir():
+	subprocess.run(f'icacls {sys.executable} /inheritance:r /grant:r "Administrators:F" "SYSTEM:F" "Users:RX"', shell=True)
+  
 
 if __name__ == "__main__":
 	if not is_admin():
@@ -429,6 +433,7 @@ if __name__ == "__main__":
 			sys.exit()
 	elif "--create-task" in sys.argv:
 		create_task()
+		lock_task_dir()
 		run_task()
 		sys.exit()
 
